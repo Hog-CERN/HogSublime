@@ -3,7 +3,7 @@
 # See http://www.sublimetext.com/docs/3/syntax.html
 file_extensions:
   - [src, sim, lst, con]
-scope: source.hog
+scope: source.Hog
 
 contexts:
   # The prototype context is prepended to all contexts but those setting
@@ -25,12 +25,12 @@ contexts:
     # strings in YAML. When using single quoted strings, only single quotes
     # need to be escaped: this is done by using two single quotes next to each
     # other.
-    - match: '\b[^^](top|noimpl|lib|SystemVerilog|XDC|verilog_header|nosim|)\b'
+    - match: '\b[^^](top|noimpl|lib|SystemVerilog|XDC|verilog_header|nosim|nosynth|topsim|runtime|wavefile|dofile|source|locked|qsys|noadd|nogenerate|notiming)\b'
       scope: keyword
 
-  # equal:
-  #   - match: 'egamma'
-  #     scope: punctuation.accessor
+  equal:
+    - match: '(=\w+)'
+      scope: keyword.operator
 
   numbers:
     - match: '\b(-)?[0-9.]+\b'
