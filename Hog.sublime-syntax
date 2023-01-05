@@ -3,7 +3,7 @@
 # See http://www.sublimetext.com/docs/3/syntax.html
 file_extensions:
   - [src, sim, lst, con]
-scope: source.Hog
+scope: source.hog
 
 contexts:
   # The prototype context is prepended to all contexts but those setting
@@ -30,11 +30,11 @@ contexts:
 
   equal:
     - match: '(=\w+)'
-      scope: keyword.operator
+      scope: keyword.operator.hog
 
   numbers:
     - match: '\b(-)?[0-9.]+\b'
-      scope: constant.numeric
+      scope: constant.numeric.hog
 
   strings:
     # Strings begin and end with quotes, and use backslashes as an escape
