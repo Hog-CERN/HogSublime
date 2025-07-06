@@ -5,7 +5,10 @@ name: Hog
 version: 1
 hidden: false
 file_extensions:
-  - [src, sim, lst, con]
+  - src
+  - sim
+  - lst
+  - con
 scope: source.hog
 
 contexts:
