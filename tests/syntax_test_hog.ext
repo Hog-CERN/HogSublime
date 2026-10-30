@@ -1,0 +1,11 @@
+# SYNTAX TEST "Packages/Hog/Hog.sublime-syntax"
+# External list files: absolute path plus MD5 hash.
+/afs/cern.ch/project/restricted/file_1.vhd  725cda057150d688c7970cfc53dc6db6
+# <- meta.path.hog entity.name.file.hog
+#                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ constant.other.hash.hog - meta.path
+file_2.xci C15F520DB4BDEF24F976CB459B1A5421
+#          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ constant.other.hash.hog
+file_2.xci 725cda05
+#          ^^^^^^^^ - constant.other.hash
+file_3.xci 725cda057150d688c7970cfc53dc6db6a
+#          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - constant.other.hash

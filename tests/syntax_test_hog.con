@@ -1,0 +1,20 @@
+# SYNTAX TEST "Packages/Hog/Hog.sublime-syntax"
+# Constraint list files.
+constr/c1.xdc           # constraint used for synthesis and implementation
+# <- meta.path.hog entity.name.file.hog
+#                       ^ comment.line.number-sign.hog
+constr/c2.xdc nosynth
+#             ^^^^^^^ storage.modifier.hog
+c1.xdc scoped_to_ref=uart_tx_ctl
+#      ^^^^^^^^^^^^^ storage.modifier.hog
+#                    ^^^^^^^^^^^ string.unquoted.hog
+c1.xdc scoped_to_cells=uart_tx_i0/uart_tx_ctl_i0
+#      ^^^^^^^^^^^^^^^ storage.modifier.hog
+#                      ^^^^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.hog - meta.path
+pins.sdc notiming noplace
+#        ^^^^^^^^ storage.modifier.hog
+#                 ^^^^^^^ storage.modifier.hog
+diamond.lpf enable
+#           ^^^^^^ storage.modifier.hog
+x.tcl XDC
+#     ^^^ storage.modifier.hog
