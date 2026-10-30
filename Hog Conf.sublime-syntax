@@ -41,7 +41,8 @@ contexts:
   body:
     - include: comments
     - include: section-header
-    - match: ([A-Za-z_][\w.]*)\s*(=)\s*
+    # Keys may contain spaces, e.g. 'STEPS.SYNTH_DESIGN.ARGS.MORE OPTIONS'.
+    - match: ^\s*([A-Za-z_][\w.]*(?:[ \t]+[\w.]+)*)\s*(=)\s*
       captures:
         1: variable.other.property.hog-conf
         2: keyword.operator.assignment.hog-conf
