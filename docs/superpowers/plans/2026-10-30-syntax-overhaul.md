@@ -4,9 +4,9 @@
 
 **Goal:** Rewrite the Hog list-file syntax, add a `hog.conf` syntax, comment toggling, Goto Symbol and syntax tests, for Sublime Text 4, without breaking existing users.
 
-**Architecture:** Two `version: 2` sublime-syntax files (`Hog.sublime-syntax` rewritten in place, new `Hog Conf.sublime-syntax`), two `.tmPreferences` files, and Sublime syntax-test files under `tests/`. Tests run with Sublime's headless `syntax_tests` binary, locally through `tests/run_syntax_tests.sh` and in CI through `SublimeText/syntax-test-action`.
+**Architecture:** Two `version: 2` sublime-syntax files (`Hog.sublime-syntax` rewritten in place, new `Hog Conf.sublime-syntax`), two `.tmPreferences` files, and Sublime syntax-test files under `tests/`. Tests run locally with Sublime's headless `syntax_tests` binary through `tests/run_syntax_tests.sh`.
 
-**Tech Stack:** Sublime Text 4 sublime-syntax (YAML, Oniguruma regex), tmPreferences (plist XML), GitHub Actions.
+**Tech Stack:** Sublime Text 4 sublime-syntax (YAML, Oniguruma regex), tmPreferences (plist XML).
 
 **Spec:** `docs/superpowers/specs/2026-10-30-syntax-overhaul-design.md` — read it in full; its token tables are the source of truth for every scope name.
 
@@ -17,7 +17,7 @@
 - Both syntaxes use `version: 2`; ST4 only, minimum build 4075.
 - Every scope ends in `.hog` (list) or `.hog-conf` (conf).
 - List `file_extensions`: `src sim con lst ext ipb` (no `sub`). Conf `file_extensions`: `hog.conf`, `sim.conf`.
-- No Python files. No git tags created or pushed.
+- No Python files. No CI configuration. No git tags created or pushed.
 - Commit messages end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 
 ## Review Focus
@@ -35,8 +35,7 @@
 | Path | Responsibility | Task |
 |---|---|---|
 | `tests/run_syntax_tests.sh` | Run Sublime's headless syntax tests against this repo | 1 |
-| `.github/workflows/syntax.yml` | CI running the syntax tests | 1 |
-| `.gitattributes` | Keep `tests/`, `docs/`, `.github/` out of the installed package | 1 |
+| `.gitattributes` | Keep `tests/` and `docs/` out of the installed package | 1 |
 | `Hog.sublime-syntax` | List files (file lines, sections, properties, directive) | 2, 3 |
 | `tests/syntax_test_hog.{src,con,lst,ext,ipb}` | List file-line tests | 2 |
 | `tests/syntax_test_hog.sim` | Sections, properties, directive tests | 3 |
@@ -52,7 +51,7 @@ Syntax-test assertion syntax reminder: the comment token is `#`, so assertion li
 ### Task 1: Test tooling
 
 **Files:**
-- Create: `tests/run_syntax_tests.sh`, `.github/workflows/syntax.yml`, `.gitattributes`
+- Create: `tests/run_syntax_tests.sh`, `.gitattributes`
 - Create (placeholder): `tests/syntax_test_hog.src`
 
 **Interfaces:**
@@ -77,24 +76,19 @@ Run: `tests/run_syntax_tests.sh "$ST_SYNTAX_TESTS"`
 Expected: non-zero exit, one failed assertion in `syntax_test_hog.src` line 3 (the current regex scopes `top` in the path as `keyword`).
 If the runner binary is not available in the environment, stop and ask the user to download it (or grant permission); do not skip verification silently.
 
-- [ ] **Step 4: Write `.github/workflows/syntax.yml`**
-
-On `push` and `pull_request`; one job on `ubuntu-latest` with `actions/checkout@v4` then `SublimeText/syntax-test-action@v2` with `build: 4200` and `package_name: Hog`.
-
-- [ ] **Step 5: Write `.gitattributes`**
+- [ ] **Step 4: Write `.gitattributes`**
 
 ```
 /tests/       export-ignore
 /docs/        export-ignore
-/.github/     export-ignore
 /.gitattributes export-ignore
 ```
 
-- [ ] **Step 6: Commit** (placeholder test is allowed to fail at this commit; Task 2 replaces it)
+- [ ] **Step 5: Commit** (placeholder test is allowed to fail at this commit; Task 2 replaces it)
 
 ```bash
-git add tests .github .gitattributes
-git commit -m "Add syntax test tooling and CI"
+git add tests .gitattributes
+git commit -m "Add syntax test tooling"
 ```
 
 ---
@@ -395,7 +389,7 @@ git commit -m "Add comment toggling and Goto Symbol preferences"
 
 - [ ] **Step 1: Rewrite `README.md`**
 
-Sections: what the package does (both syntaxes, supported extensions `.src .sim .con .lst .ext .ipb`, `hog.conf`, `sim.conf`); features (highlighting summary, Ctrl+/, Ctrl+R); requirements (Sublime Text 4, build 4075+; ST3 users stay on v0.0.2); development (running `tests/run_syntax_tests.sh` with the downloaded `st_syntax_tests` build, CI). Keep the link to https://cern.ch/hog.
+Sections: what the package does (both syntaxes, supported extensions `.src .sim .con .lst .ext .ipb`, `hog.conf`, `sim.conf`); features (highlighting summary, Ctrl+/, Ctrl+R); requirements (Sublime Text 4, build 4075+; ST3 users stay on v0.0.2); development (running `tests/run_syntax_tests.sh` with the downloaded `st_syntax_tests` build). Keep the link to https://cern.ch/hog.
 
 - [ ] **Step 2: Verify** — every extension in `Hog.sublime-syntax` and `Hog Conf.sublime-syntax` `file_extensions` appears in the README; `tests/run_syntax_tests.sh` exit 0.
 
