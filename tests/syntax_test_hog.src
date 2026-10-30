@@ -64,6 +64,9 @@ ip/fifo.xci locked   # trailing comment
 #                      ^^^^^^^^^^^^^^^^ comment.line.number-sign.hog
 x.vhd # nosim
 #       ^^^^^ comment.line.number-sign.hog - storage.modifier
+after_comment.vhd nosim
+# <- meta.path.hog entity.name.file.hog
+#                 ^^^^^ storage.modifier.hog
 src/a#b.vhd --opt=a#b foo=bar
 # <- meta.path.hog - comment
 #^^^^^^^^^^ meta.path.hog - comment

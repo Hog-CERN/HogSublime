@@ -23,10 +23,31 @@ variables:
        | locked | SystemVerilog | verilog_header | verilog | XDC | source
        | qsys | enable )
   versions: (?:93|1987|1993|2008|2019|1995|2001|2005|2009)
+  # End of a property value: optional whitespace, then a comment or the end
+  # of the line.
+  eov: (?=\s*(?:#|$))
 
 contexts:
   main:
-    - include: files-body
+    - match: ''
+      push: [files-body, first-line]
+
+  first-line:
+    # '#Simulator <name>' is a directive only on the first line of a .sim file.
+    - match: ^(#)(Simulator)\s+(\S+)
+      captures:
+        1: punctuation.definition.comment.hog
+        2: keyword.other.directive.hog
+        3: support.constant.simulator.hog
+      set: directive-body
+    - match: ''
+      pop: 1
+
+  directive-body:
+    - meta_include_prototype: false
+    - meta_scope: comment.line.number-sign.hog meta.directive.hog
+    - match: $\n?
+      pop: 1
 
 ###[ COMMENTS ]################################################################
 
@@ -43,9 +64,57 @@ contexts:
     - match: $\n?
       pop: 1
 
+###[ SECTIONS ]################################################################
+
+  section-header:
+    # Sections of .sim files (Hog2025.2+). Lines after [files] are file lines,
+    # lines after any other section are KEY=VALUE properties.
+    - match: ^\s*((\[)(files)(\]))
+      captures:
+        1: meta.section.hog
+        2: punctuation.definition.section.begin.hog
+        3: entity.name.section.hog
+        4: punctuation.definition.section.end.hog
+      set: files-body
+    - match: ^\s*((\[)([\w.:-]+)(\]))
+      captures:
+        1: meta.section.hog
+        2: punctuation.definition.section.begin.hog
+        3: entity.name.section.hog
+        4: punctuation.definition.section.end.hog
+      set: properties-body
+
+###[ PROPERTIES ]##############################################################
+
+  properties-body:
+    - include: section-header
+    - include: comments
+    - match: ([A-Za-z_][\w.]*)\s*(=)\s*
+      captures:
+        1: variable.other.property.hog
+        2: keyword.operator.assignment.hog
+      push: property-value
+
+  property-value:
+    - match: $\n?
+      pop: 1
+    - include: comments
+    - match: '"'
+      scope: punctuation.definition.string.begin.hog
+      push: quoted-string
+    - match: (?:true|false){{eov}}
+      scope: constant.language.boolean.hog
+    - match: -?\d+(?:\.\d+)?[A-Za-z]*{{eov}}
+      scope: constant.numeric.hog
+    # Unquoted values may contain spaces; they end before a comment or
+    # trailing whitespace.
+    - match: '[^\s"](?:[^\s"]|\s+(?=[^\s#"]))*'
+      scope: string.unquoted.hog
+
 ###[ FILE LINES ]##############################################################
 
   files-body:
+    - include: section-header
     - include: comments
     - match: (?=\S)
       push: file-line

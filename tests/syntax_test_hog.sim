@@ -1,0 +1,66 @@
+# SYNTAX TEST "Packages/Hog/Hog.sublime-syntax"
+#Simulator xsim
+# <- comment.line.number-sign.hog - meta.directive
+#^^^^^^^^^ comment.line.number-sign.hog - keyword.other.directive
+tb_before_sections.vhd
+# <- meta.path.hog entity.name.file.hog
+[files]
+# <- meta.section.hog punctuation.definition.section.begin.hog
+#^^^^^ meta.section.hog entity.name.section.hog
+#     ^ meta.section.hog punctuation.definition.section.end.hog
+myfile.vhd
+# <- meta.path.hog entity.name.file.hog
+RUNTIME=10us
+# <- meta.path.hog
+# <- meta.path.hog - variable.other.property
+#^^^^^^^^^^^ meta.path.hog - variable.other.property
+[properties]
+#^^^^^^^^^^ entity.name.section.hog
+RUNTIME=10us
+# <- variable.other.property.hog
+#^^^^^^ variable.other.property.hog - meta.path
+#      ^ keyword.operator.assignment.hog
+#       ^^^^ constant.numeric.hog
+TOP = TB_fifo
+# <- variable.other.property.hog
+#   ^ keyword.operator.assignment.hog
+#     ^^^^^^^ string.unquoted.hog
+MODELSIM.SIMULATE.RUNTIME=-1.5
+# <- variable.other.property.hog
+#^^^^^^^^^^^^^^^^^^^^^^^^ variable.other.property.hog
+#                         ^^^^ constant.numeric.hog
+ACTIVE=true # comment
+#      ^^^^ constant.language.boolean.hog
+#           ^ comment.line.number-sign.hog punctuation.definition.comment.hog
+WAVE=xsim/wave.wcfg
+#    ^^^^^^^^^^^^^^ string.unquoted.hog - meta.path
+HOG_SIMPASS_STR="oops
+#               ^^^^^ string.quoted.double.hog
+NEXT=1
+# <- variable.other.property.hog - string
+#    ^ constant.numeric.hog
+GEN=10 MHz
+#   ^^^^^^ string.unquoted.hog - constant.numeric
+  [generics]
+# ^ meta.section.hog punctuation.definition.section.begin.hog
+#  ^^^^^^^^ entity.name.section.hog
+MYGENERIC=1
+# <- variable.other.property.hog
+#         ^ constant.numeric.hog
+   # indented comment
+#  ^^^^^^^^^^^^^^^^^^ comment.line.number-sign.hog
+[hog]
+#^^^ entity.name.section.hog
+HOG_SIMPASS_STR="sim \"passed\""
+#               ^^^^^^^^^^^^^^^^ string.quoted.double.hog
+#                    ^^ constant.character.escape.hog
+[files]
+back.vhd nosim
+# <- meta.path.hog entity.name.file.hog
+#        ^^^^^ storage.modifier.hog
+[files] # trailing
+#^^^^^ entity.name.section.hog
+#       ^ comment.line.number-sign.hog
+[unknown_section]
+KEY=VALUE
+# <- variable.other.property.hog

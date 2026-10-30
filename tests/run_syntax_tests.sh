@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Run the Hog syntax tests and syntax compatibility checks headless, using the
-# Docker/podman runner of https://github.com/SublimeText/UnitTesting.
+# Run the Hog syntax tests, syntax compatibility checks and tests/test_*.py
+# headless, using the Docker/podman runner of
+# https://github.com/SublimeText/UnitTesting.
 #
 # Usage: tests/run_syntax_tests.sh [UNITTESTING_DIR]
 #   UNITTESTING_DIR  local clone of SublimeText/UnitTesting
@@ -17,4 +18,4 @@ fi
 repo="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # The checkout may not be named "Hog", but test headers use Packages/Hog/...
-exec python3 -I "$ut/docker/run_tests.py" "$repo" --package-name Hog --no-unit-tests
+exec python3 -I "$ut/docker/run_tests.py" "$repo" --package-name Hog
