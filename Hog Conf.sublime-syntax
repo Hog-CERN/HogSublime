@@ -1,0 +1,114 @@
+%YAML 1.2
+---
+# Hog (HDL-on-git) project configuration: Top/<project>/hog.conf and sim.conf
+# https://www.sublimetext.com/docs/syntax.html
+# https://hog.readthedocs.io/en/latest/02-User-Manual/01-Hog-local/01-conf.html
+name: Hog Conf
+scope: source.hog-conf
+version: 2
+file_extensions:
+  - hog.conf
+  - sim.conf
+
+variables:
+  # End of a value: optional whitespace, then a comment or the end of the line.
+  eov: (?=\s*(?:#|$))
+
+contexts:
+  main:
+    - match: ''
+      push: [body, first-line]
+
+  first-line:
+    # '#<tool> [<tool>] [<version>]', e.g. '#vivado vitis_classic 2023.1', is
+    # a directive only on the first line.
+    - match: ^(#)([A-Za-z_]\w*)(?:\s+([A-Za-z_]\w*))?(?:\s+(\d[\w.]*))?
+      captures:
+        1: punctuation.definition.comment.hog-conf
+        2: support.constant.tool.hog-conf
+        3: support.constant.tool.hog-conf
+        4: constant.numeric.version.hog-conf
+      set: directive-body
+    - match: ''
+      pop: 1
+
+  directive-body:
+    - meta_include_prototype: false
+    - meta_scope: comment.line.number-sign.hog-conf meta.directive.hog-conf
+    - match: $\n?
+      pop: 1
+
+  body:
+    - include: comments
+    - include: section-header
+    - match: ([A-Za-z_][\w.]*)\s*(=)\s*
+      captures:
+        1: variable.other.property.hog-conf
+        2: keyword.operator.assignment.hog-conf
+      push: value
+
+###[ COMMENTS ]################################################################
+
+  comments:
+    # A comment starts at a '#' at the beginning of a token, so that 'a#b'
+    # stays a value.
+    - match: '#'
+      scope: punctuation.definition.comment.hog-conf
+      push: comment-body
+
+  comment-body:
+    - meta_include_prototype: false
+    - meta_scope: comment.line.number-sign.hog-conf
+    - match: $\n?
+      pop: 1
+
+###[ SECTIONS ]################################################################
+
+  section-header:
+    # [main], [synth_1], [platform:MyPlatform], [hls:my_component], ...
+    - match: ^\s*(\[)
+      captures:
+        1: punctuation.definition.section.begin.hog-conf
+      push: section-name
+
+  section-name:
+    - meta_include_prototype: false
+    - meta_scope: meta.section.hog-conf
+    - meta_content_scope: entity.name.section.hog-conf
+    - match: \]
+      scope: punctuation.definition.section.end.hog-conf
+      pop: 1
+    - match: ':'
+      scope: punctuation.separator.hog-conf
+    - match: (?=[^\w.:-])
+      pop: 1
+
+###[ VALUES ]##################################################################
+
+  value:
+    - match: $\n?
+      pop: 1
+    - include: comments
+    - match: '"'
+      scope: punctuation.definition.string.begin.hog-conf
+      push: quoted-string
+    - match: (?:true|false){{eov}}
+      scope: constant.language.boolean.hog-conf
+    - match: -?\d+(?:\.\d+)?[A-Za-z]*{{eov}}
+      scope: constant.numeric.hog-conf
+    # Unquoted values may contain spaces; they end before a comment or
+    # trailing whitespace.
+    - match: '[^\s"](?:[^\s"]|\s+(?=[^\s#"]))*'
+      scope: string.unquoted.hog-conf
+
+  quoted-string:
+    - meta_include_prototype: false
+    - meta_scope: string.quoted.double.hog-conf
+    - match: '"'
+      scope: punctuation.definition.string.end.hog-conf
+      pop: 1
+    - match: \\.
+      scope: constant.character.escape.hog-conf
+    # An unterminated string ends at the end of the line.
+    - match: $
+      pop: 1
