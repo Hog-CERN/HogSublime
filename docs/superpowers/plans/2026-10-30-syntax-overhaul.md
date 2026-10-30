@@ -4,7 +4,7 @@
 
 **Goal:** Rewrite the Hog list-file syntax, add a `hog.conf` syntax, comment toggling, Goto Symbol and syntax tests, for Sublime Text 4, without breaking existing users.
 
-**Architecture:** Two `version: 2` sublime-syntax files (`Hog.sublime-syntax` rewritten in place, new `Hog Conf.sublime-syntax`), two `.tmPreferences` files, and Sublime syntax-test files under `tests/`. Tests run locally with Sublime's headless `syntax_tests` binary through `tests/run_syntax_tests.sh`.
+**Architecture:** Two `version: 2` sublime-syntax files (`Hog.sublime-syntax` rewritten in place, new `Hog Conf.sublime-syntax`), two `.tmPreferences` files, and Sublime syntax-test files under `tests/`. Tests run locally, headless, through `tests/run_syntax_tests.sh`, a thin wrapper around the Docker/podman runner of [SublimeText/UnitTesting](https://github.com/SublimeText/UnitTesting) (`docker/run_tests.py`), which runs the syntax tests and the syntax compatibility checks in Sublime Text build 4215.
 
 **Tech Stack:** Sublime Text 4 sublime-syntax (YAML, Oniguruma regex), tmPreferences (plist XML).
 
@@ -55,7 +55,7 @@ Syntax-test assertion syntax reminder: the comment token is `#`, so assertion li
 - Create (placeholder): `tests/syntax_test_hog.src`
 
 **Interfaces:**
-- Produces: `tests/run_syntax_tests.sh [ST_SYNTAX_TESTS_DIR]` — exit 0 when all tests pass. Directory defaults to `$ST_SYNTAX_TESTS` env var. Every later task's verification step is `tests/run_syntax_tests.sh`.
+- Produces: `tests/run_syntax_tests.sh [UNITTESTING_DIR]` — exit 0 when all syntax tests and compatibility checks pass, non-zero otherwise. The UnitTesting checkout defaults to `$UNITTESTING_DIR`. Every later task's verification step is `tests/run_syntax_tests.sh`.
 
 - [ ] **Step 1: Write a placeholder test that must fail against the current syntax**
 
@@ -68,13 +68,12 @@ src/top/x.vhd
 
 - [ ] **Step 2: Write `tests/run_syntax_tests.sh`**
 
-Takes the extracted `st_syntax_tests_build_<N>_x64` directory (from `https://download.sublimetext.com/st_syntax_tests_build_4200_x64.tar.xz`). Creates `<dir>/Data/Packages/`, symlinks the repo root there as `Hog` (replace an existing link), runs `<dir>/syntax_tests` from `<dir>`, and propagates its exit status. Prints a usage message and exits 2 if no directory is given or `syntax_tests` is missing. `set -euo pipefail`, executable bit set.
+Takes a local clone of `https://github.com/SublimeText/UnitTesting` (argument or `$UNITTESTING_DIR`). Runs `python3 -I "$UT/docker/run_tests.py" "<repo root>" --package-name Hog --no-unit-tests` and propagates its exit status. `--package-name Hog` is required: the checkout directory is `HogSublime`, but test headers reference `Packages/Hog/...`. Prints a usage message and exits 2 if no checkout is given or `docker/run_tests.py` is missing. `set -euo pipefail`, executable bit set. Note: the runner syncs only files not ignored by git, so new files are picked up before they are committed.
 
 - [ ] **Step 3: Run it; expect FAIL**
 
-Run: `tests/run_syntax_tests.sh "$ST_SYNTAX_TESTS"`
-Expected: non-zero exit, one failed assertion in `syntax_test_hog.src` line 3 (the current regex scopes `top` in the path as `keyword`).
-If the runner binary is not available in the environment, stop and ask the user to download it (or grant permission); do not skip verification silently.
+Run: `tests/run_syntax_tests.sh`
+Expected: non-zero exit, one failed assertion in `syntax_test_hog.src` line 3 (the current regex scopes `top` in the path as `keyword`). If the exit status is 0 despite the failure, the wrapper must detect failure from the output (`=== SYNTAX TESTS OUTPUT ===` section not ending in `OK`) instead; fix the wrapper before moving on.
 
 - [ ] **Step 4: Write `.gitattributes`**
 
@@ -359,7 +358,7 @@ git commit -m "Add Hog Conf syntax for hog.conf and sim.conf"
 
 - [ ] **Step 1: Write the failing tests**
 
-Using ST4 syntax-test symbol assertions (`@@@ local-definition` for symbols shown in Ctrl+R only, `@@@ definition` for indexed ones): first path of a `.src` line → `local-definition`; second path on an `.ipb`-style line → no symbol; section name in `.sim` and `.conf` → `definition`. If build 4200's runner does not support symbol assertions, drop this step, note it in the commit, and verify Step 4's manual checks instead.
+Using ST4 syntax-test symbol assertions (`@@@ local-definition` for symbols shown in Ctrl+R only, `@@@ definition` for indexed ones): first path of a `.src` line → `local-definition`; second path on an `.ipb`-style line → no symbol; section name in `.sim` and `.conf` → `definition`. If build 4215's runner does not support symbol assertions, drop this step, note it in the commit, and verify Step 4's manual checks instead.
 
 - [ ] **Step 2: Run; expect FAIL** — `tests/run_syntax_tests.sh` reports missing symbols.
 
@@ -389,7 +388,7 @@ git commit -m "Add comment toggling and Goto Symbol preferences"
 
 - [ ] **Step 1: Rewrite `README.md`**
 
-Sections: what the package does (both syntaxes, supported extensions `.src .sim .con .lst .ext .ipb`, `hog.conf`, `sim.conf`); features (highlighting summary, Ctrl+/, Ctrl+R); requirements (Sublime Text 4, build 4075+; ST3 users stay on v0.0.2); development (running `tests/run_syntax_tests.sh` with the downloaded `st_syntax_tests` build). Keep the link to https://cern.ch/hog.
+Sections: what the package does (both syntaxes, supported extensions `.src .sim .con .lst .ext .ipb`, `hog.conf`, `sim.conf`); features (highlighting summary, Ctrl+/, Ctrl+R); requirements (Sublime Text 4, build 4075+; ST3 users stay on v0.0.2); development (running `tests/run_syntax_tests.sh` with a clone of SublimeText/UnitTesting and Docker or podman). Keep the link to https://cern.ch/hog.
 
 - [ ] **Step 2: Verify** — every extension in `Hog.sublime-syntax` and `Hog Conf.sublime-syntax` `file_extensions` appears in the README; `tests/run_syntax_tests.sh` exit 0.
 
