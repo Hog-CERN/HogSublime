@@ -87,3 +87,39 @@ class TestFileAssociation(TestCase):
 
     def test_sub_is_not_associated(self):
         self.assertNotEqual(self.syntax_for("/repo/Top/proj/list/x.sub"), LIST_SYNTAX)
+
+
+class TestToggleComment(ViewTestCase):
+    def toggled(self, syntax, text):
+        self.load(syntax, text)
+        self.view.sel().clear()
+        self.view.sel().add(sublime.Region(0, 0))
+        self.view.run_command("toggle_comment", {"block": False})
+        return self.view.substr(sublime.Region(0, self.view.size()))
+
+    def test_list_file(self):
+        self.assertEqual(self.toggled(LIST_SYNTAX, "a.vhd nosim\n"), "# a.vhd nosim\n")
+
+    def test_conf_file(self):
+        self.assertEqual(self.toggled(CONF_SYNTAX, "PART = x\n"), "# PART = x\n")
+
+
+class TestSymbols(ViewTestCase):
+    def symbols(self):
+        return [self.view.substr(r.region) for r in self.view.symbol_regions()]
+
+    def indexed(self):
+        return [self.view.substr(r.region) for r in self.view.indexed_symbol_regions()]
+
+    def test_list_file_symbols(self):
+        self.load(LIST_SYNTAX, "a.vhd nosim\nxml/r.xml gen/r.vhd\n[files]\nb.vhd\n")
+        self.assertEqual(self.symbols(), ["a.vhd", "xml/r.xml", "files", "b.vhd"])
+
+    def test_list_file_index_has_sections_only(self):
+        self.load(LIST_SYNTAX, "a.vhd nosim\n[files]\nb.vhd\n[properties]\nTOP=x\n")
+        self.assertEqual(self.indexed(), ["files", "properties"])
+
+    def test_conf_symbols_and_index(self):
+        self.load(CONF_SYNTAX, "#vivado\n[main]\nPART = x\n[platform:P1]\n")
+        self.assertEqual(self.symbols(), ["main", "platform:P1"])
+        self.assertEqual(self.indexed(), ["main", "platform:P1"])
