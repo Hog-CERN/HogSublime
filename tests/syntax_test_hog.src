@@ -1,0 +1,103 @@
+# SYNTAX TEST "Packages/Hog/Hog.sublime-syntax"
+# Plain file lines and modifiers in .src list files.
+src/top/nosim/lib/x.vhd lib=my_lib nosim 93
+# <- meta.path.hog string.unquoted.path.hog entity.name.file.hog
+#^^^^^^^^^^^^^^^^^^^^^^ meta.path.hog string.unquoted.path.hog entity.name.file.hog
+#   ^^^ - storage.modifier
+#       ^^^^^ meta.path.hog - storage.modifier
+#                       ^^^ storage.modifier.hog - meta.path
+#                          ^ keyword.operator.assignment.hog
+#                           ^^^^^^ string.unquoted.hog - meta.path
+#                                  ^^^^^ storage.modifier.hog
+#                                        ^^ constant.numeric.integer.decimal.hog
+v1.2/a.vhd 2008
+#^^^ meta.path.hog - constant.numeric
+#          ^^^^ constant.numeric.integer.decimal.hog
+*/src/*.vhd nosynth noimpl
+# <- meta.path.hog keyword.operator.wildcard.hog
+#     ^ meta.path.hog keyword.operator.wildcard.hog
+# ^^^ meta.path.hog - keyword.operator
+#           ^^^^^^^ storage.modifier.hog
+#                   ^^^^^^ storage.modifier.hog
+src/?.vhd 1987 1993 2019 x.vhd
+#   ^ keyword.operator.wildcard.hog
+#         ^^^^ constant.numeric.integer.decimal.hog
+#              ^^^^ constant.numeric.integer.decimal.hog
+#                   ^^^^ constant.numeric.integer.decimal.hog
+x.vhd nosimx nosyth 2010 93a
+#     ^^^^^^ - storage.modifier
+#            ^^^^^^ - storage.modifier - meta.path
+#                   ^^^^ - constant.numeric
+#                        ^^^ - constant.numeric
+x.vhd		nosim
+#      ^^^^^ storage.modifier.hog
+#    ^^ - storage.modifier
+x.vhd   lib=abc   
+#       ^^^ storage.modifier.hog
+#           ^^^ string.unquoted.hog
+#              ^^^ - string
+x.vhd nosim   
+#     ^^^^^ storage.modifier.hog
+nosim
+# <- meta.path.hog entity.name.file.hog - storage.modifier
+top.v top=top_module topsim=tb_top SystemVerilog verilog_header
+#     ^^^^ - meta.path
+#     ^^^ storage.modifier.hog
+#         ^^^^^^^^^^ string.unquoted.hog
+#                    ^^^^^^ storage.modifier.hog
+#                           ^^^^^^ string.unquoted.hog
+#                                  ^^^^^^^^^^^^^ storage.modifier.hog
+#                                                ^^^^^^^^^^^^^^ storage.modifier.hog
+top.sv verilog 2005 2009
+#      ^^^^^^^ storage.modifier.hog
+#              ^^^^ constant.numeric.integer.decimal.hog
+#                   ^^^^ constant.numeric.integer.decimal.hog
+top.v 1995 2001
+#     ^^^^ constant.numeric.integer.decimal.hog
+#          ^^^^ constant.numeric.integer.decimal.hog
+bar.src lib=my_library path=path/to/submodule
+#                      ^^^^ storage.modifier.hog
+#                           ^^^^^^^^^^^^^^^^^ meta.path.hog string.unquoted.path.hog - entity.name.file
+ip/fifo.xci locked   # trailing comment
+#           ^^^^^^ storage.modifier.hog
+#                    ^ comment.line.number-sign.hog punctuation.definition.comment.hog
+#                      ^^^^^^^^^^^^^^^^ comment.line.number-sign.hog
+x.vhd # nosim
+#       ^^^^^ comment.line.number-sign.hog - storage.modifier
+after_comment.vhd nosim
+# <- meta.path.hog entity.name.file.hog
+#                 ^^^^^ storage.modifier.hog
+src/a#b.vhd --opt=a#b foo=bar
+# <- meta.path.hog - comment
+#^^^^^^^^^^ meta.path.hog - comment
+#                  ^^ - comment
+#           ^^^^^ variable.parameter.option.hog
+#                     ^^^ storage.modifier.hog
+#                         ^^^ string.unquoted.hog
+sys.qsys --synthesis=VHDL nogenerate noadd
+#        ^^^^^^^^^^^ variable.parameter.option.hog
+#                   ^ keyword.operator.assignment.hog
+#                    ^^^^ string.unquoted.hog
+#                         ^^^^^^^^^^ storage.modifier.hog
+#                                    ^^^^^ storage.modifier.hog
+gen.tcl qsys --part source XDC
+#       ^^^^ storage.modifier.hog
+#            ^^^^^^ variable.parameter.option.hog
+#                   ^^^^^^ storage.modifier.hog
+#                          ^^^ storage.modifier.hog
+"dir with space/x.vhd" lib="my lib"
+# <- meta.path.hog string.quoted.double.hog punctuation.definition.string.begin.hog
+#^^^^^^^^^^^^^^^^^^^^ meta.path.hog string.quoted.double.hog entity.name.file.hog
+#                    ^ meta.path.hog string.quoted.double.hog punctuation.definition.string.end.hog
+#                      ^^^ storage.modifier.hog
+#                          ^^^^^^^^ string.quoted.double.hog
+x.vhd lib="unterminated
+#          ^^^^^^^^^^^^ string.quoted.double.hog
+next.vhd nosim
+# <- meta.path.hog entity.name.file.hog - string.quoted
+#        ^^^^^ storage.modifier.hog
+   # indented comment
+#  ^^^^^^^^^^^^^^^^^^ comment.line.number-sign.hog
+  indented/x.vhd nosim
+# ^^^^^^^^^^^^^^ meta.path.hog entity.name.file.hog
+#                ^^^^^ storage.modifier.hog

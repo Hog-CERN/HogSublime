@@ -1,0 +1,10 @@
+# SYNTAX TEST "Packages/Hog/Hog.sublime-syntax"
+# Generic list files, including nested list files.
+src/a.vhd
+# <- meta.path.hog string.unquoted.path.hog entity.name.file.hog
+src/b.v nosim
+#       ^^^^^ storage.modifier.hog
+common.src lib=shared
+# <- meta.path.hog entity.name.file.hog
+#          ^^^ storage.modifier.hog
+#              ^^^^^^ string.unquoted.hog

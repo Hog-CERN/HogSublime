@@ -1,69 +1,223 @@
 %YAML 1.2
 ---
-# See http://www.sublimetext.com/docs/3/syntax.html
+# Hog (HDL-on-git) list files: .src .sim .con .lst .ext .ipb
+# https://www.sublimetext.com/docs/syntax.html
+# https://hog.readthedocs.io/en/latest/02-User-Manual/01-Hog-local/02-List-files.html
 name: Hog
-version: 1
-hidden: false
+scope: source.hog
+version: 2
 file_extensions:
   - src
   - sim
-  - lst
   - con
-scope: source.hog
+  - lst
+  - ext
+  - ipb
+
+variables:
+  # End of a whitespace-separated token. Every rule consumes whole tokens, so
+  # matches always start at the beginning of a token.
+  eot: (?=\s|$)
+  flags: |-
+    (?x: nosynth | noimpl | nosim | noadd | nogenerate | notiming | noplace
+       | locked | SystemVerilog | verilog_header | verilog | XDC | source
+       | qsys | enable )
+  versions: (?:93|1987|1993|2008|2019|1995|2001|2005|2009)
+  # End of a property value: optional whitespace, then a comment or the end
+  # of the line.
+  eov: (?=\s*(?:#|$))
 
 contexts:
-  # The prototype context is prepended to all contexts but those setting
-  # meta_include_prototype: false.
-  prototype:
-    - include: comments
-
   main:
-    # The main context is the initial starting point of our syntax.
-    # Include other contexts from here (or specify them directly).
-    - include: keywords
-    - include: equal
-    - include: numbers
-    - include: strings
+    - match: ''
+      push: [files-body, first-line]
 
-  keywords:
-    # Keywords are if, else for and while.
-    # Note that blackslashes don't need to be escaped within single quoted
-    # strings in YAML. When using single quoted strings, only single quotes
-    # need to be escaped: this is done by using two single quotes next to each
-    # other.
-    - match: '\b[^^](top|noimpl|lib|SystemVerilog|XDC|verilog_header|nosim|nosynth|topsim|runtime|wavefile|dofile|source|locked|qsys|noadd|nogenerate|notiming)\b'
-      scope: keyword
+  first-line:
+    # '#Simulator <name>' is a directive only on the first line of a .sim file.
+    - match: ^(#)(Simulator)\s+(\S+)
+      captures:
+        1: punctuation.definition.comment.hog
+        2: keyword.other.directive.hog
+        3: support.constant.simulator.hog
+      set: directive-body
+    - match: ''
+      pop: 1
 
-  equal:
-    - match: '(=\w+)'
-      scope: keyword.operator.hog
-
-  numbers:
-    - match: '\b(-)?[0-9.]+\b'
-      scope: constant.numeric.hog
-
-  strings:
-    # Strings begin and end with quotes, and use backslashes as an escape
-    # character.
-    - match: '"'
-      scope: punctuation.definition.string.begin.hog
-      push: inside_string
-
-  inside_string:
+  directive-body:
     - meta_include_prototype: false
-    - meta_scope: string.quoted.double.hog
-    - match: '\.'
-      scope: constant.character.escape.hog
-    - match: '"'
-      scope: punctuation.definition.string.end.hog
-      pop: true
+    - meta_scope: comment.line.number-sign.hog meta.directive.hog
+    - match: $\n?
+      pop: 1
+
+###[ COMMENTS ]################################################################
 
   comments:
-    # Comments begin with a '//' and finish at the end of the line.
+    # A comment starts at a '#' at the beginning of a token, so that
+    # 'src/a#b.vhd' stays a path.
     - match: '#'
       scope: punctuation.definition.comment.hog
-      push:
-        # This is an anonymous context push for brevity.
-        - meta_scope: comment.line.double-slash.hog
-        - match: $\n?
-          pop: true
+      push: comment-body
+
+  comment-body:
+    - meta_include_prototype: false
+    - meta_scope: comment.line.number-sign.hog
+    - match: $\n?
+      pop: 1
+
+###[ SECTIONS ]################################################################
+
+  section-header:
+    # Sections of .sim files (Hog2025.2+). Lines after [files] are file lines,
+    # lines after any other section are KEY=VALUE properties.
+    - match: ^\s*((\[)(files)(\]))
+      captures:
+        1: meta.section.hog
+        2: punctuation.definition.section.begin.hog
+        3: entity.name.section.hog
+        4: punctuation.definition.section.end.hog
+      set: files-body
+    - match: ^\s*((\[)([\w.:-]+)(\]))
+      captures:
+        1: meta.section.hog
+        2: punctuation.definition.section.begin.hog
+        3: entity.name.section.hog
+        4: punctuation.definition.section.end.hog
+      set: properties-body
+
+###[ PROPERTIES ]##############################################################
+
+  properties-body:
+    - include: section-header
+    - include: comments
+    - match: ([A-Za-z_][\w.]*)\s*(=)\s*
+      captures:
+        1: variable.other.property.hog
+        2: keyword.operator.assignment.hog
+      push: property-value
+
+  property-value:
+    - match: $\n?
+      pop: 1
+    - include: comments
+    - match: '"'
+      scope: punctuation.definition.string.begin.hog
+      push: quoted-string
+    - match: (?:true|false){{eov}}
+      scope: constant.language.boolean.hog
+    - match: -?\d+(?:\.\d+)?[A-Za-z]*{{eov}}
+      scope: constant.numeric.hog
+    # Unquoted values may contain spaces; they end before a comment or
+    # trailing whitespace.
+    - match: '[^\s"](?:[^\s"]|\s+(?=[^\s#"]))*'
+      scope: string.unquoted.hog
+
+###[ FILE LINES ]##############################################################
+
+  files-body:
+    - include: section-header
+    - include: comments
+    - match: (?=\S)
+      push: file-line
+
+  file-line:
+    # The first token of a line is always a path.
+    - match: '"'
+      scope: punctuation.definition.string.begin.hog
+      set: [line-tokens, first-quoted-path]
+    - match: (?=\S)
+      set: [line-tokens, first-path]
+
+  first-path:
+    - meta_include_prototype: false
+    - meta_scope: meta.path.hog string.unquoted.path.hog entity.name.file.hog
+    - include: path-content
+
+  first-quoted-path:
+    - meta_include_prototype: false
+    - meta_scope: meta.path.hog string.quoted.double.hog
+    - match: '"'
+      scope: punctuation.definition.string.end.hog
+      pop: 1
+    - match: '[^"]+'
+      scope: entity.name.file.hog
+    - match: $
+      pop: 1
+
+  path:
+    - meta_include_prototype: false
+    - meta_scope: meta.path.hog string.unquoted.path.hog
+    - include: path-content
+
+  path-content:
+    - match: '[*?]'
+      scope: keyword.operator.wildcard.hog
+    - match: '{{eot}}'
+      pop: 1
+
+  line-tokens:
+    # Everything after the first path, up to the end of the line.
+    - match: $\n?
+      pop: 1
+    - include: comments
+    - match: '{{flags}}{{eot}}'
+      scope: storage.modifier.hog
+    - match: '{{versions}}{{eot}}'
+      scope: constant.numeric.integer.decimal.hog
+    - match: '\h{32}{{eot}}'
+      scope: constant.other.hash.hog
+    - match: '(--[\w-]+)(=)'
+      captures:
+        1: variable.parameter.option.hog
+        2: keyword.operator.assignment.hog
+      push: modifier-value
+    - match: '--[\w-]+{{eot}}'
+      scope: variable.parameter.option.hog
+    - match: '(path)(=)'
+      captures:
+        1: storage.modifier.hog
+        2: keyword.operator.assignment.hog
+      push: path-value
+    - match: '([A-Za-z_][\w.-]*)(=)'
+      captures:
+        1: storage.modifier.hog
+        2: keyword.operator.assignment.hog
+      push: modifier-value
+    # Any other token that looks like a file: contains '/' or ends in an
+    # extension, e.g. the VHDL file of an .ipb line.
+    - match: '(?=[^\s"]*/|[^\s"]*\.\w+{{eot}})'
+      push: path
+    # Unknown words (e.g. misspelt modifiers) are left unscoped.
+    - match: '\S+'
+
+  path-value:
+    - match: '"'
+      scope: punctuation.definition.string.begin.hog
+      set: quoted-string
+    - match: (?=\S)
+      set: path
+    - match: ''
+      pop: 1
+
+  modifier-value:
+    - match: '"'
+      scope: punctuation.definition.string.begin.hog
+      set: quoted-string
+    - match: \S+
+      scope: string.unquoted.hog
+      pop: 1
+    - match: ''
+      pop: 1
+
+###[ STRINGS ]#################################################################
+
+  quoted-string:
+    - meta_include_prototype: false
+    - meta_scope: string.quoted.double.hog
+    - match: '"'
+      scope: punctuation.definition.string.end.hog
+      pop: 1
+    - match: \\.
+      scope: constant.character.escape.hog
+    # An unterminated string ends at the end of the line.
+    - match: $
+      pop: 1

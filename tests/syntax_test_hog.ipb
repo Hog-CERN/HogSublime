@@ -1,0 +1,9 @@
+# SYNTAX TEST "Packages/Hog/Hog.sublime-syntax"
+# IPbus list files: XML address table, optional generated VHDL file.
+xml/regs.xml gen/regs_decode.vhd
+# <- meta.path.hog entity.name.file.hog
+#            ^^^^^^^^^^^^^^^^^^^ meta.path.hog string.unquoted.path.hog - entity.name.file
+regs.xml regs_decode.vhd
+#        ^^^^^^^^^^^^^^^ meta.path.hog string.unquoted.path.hog - entity.name.file
+regs.xml
+# <- meta.path.hog entity.name.file.hog
